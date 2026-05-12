@@ -124,7 +124,7 @@ public class ModelAlternatifSAW {
     }
     
     public void insertDataSAW() {
-        String query = "INSERT INTO tb_saw values (?,?,?,?,?,?,?,?)";
+        String query = "INSERT INTO tabelsaw values (?,?,?,?,?,?,?,?)";
 
         try {
             PreparedStatement stat = conn.prepareStatement(query);
@@ -149,7 +149,7 @@ public class ModelAlternatifSAW {
     }
 
     public static void deleteAllRowSAW() {
-        String query = "DELETE FROM tb_saw";
+        String query = "DELETE FROM tabelsaw";
 
         try {
             PreparedStatement stat = conn.prepareStatement(query);

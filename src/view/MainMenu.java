@@ -13,8 +13,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import model.ModelAlternatifSAW;
 
 /**
  *
@@ -34,13 +39,92 @@ public class MainMenu extends javax.swing.JFrame {
         RAM();
         datatable1();
         datatable2();
+        datatable3();
         datatable6();
+        this.bobot = new double[]{0.30, 0.15, 0.10, 0.15, 0.30};
+        decimalFormat.setMaximumFractionDigits(2);
+        decimalFormat.setMinimumFractionDigits(2);
     }
     
     private Connection conn = new koneksi().connect();
     private DefaultTableModel tabmode;
     private DefaultTableModel tabmode1;
+    private DefaultTableModel tabmode2;
     private Statement statement;
+    
+    private final DecimalFormat decimalFormat = new DecimalFormat("#.###");
+    private final double[] bobot;
+    private final List<ModelAlternatifSAW> model = new ArrayList<>();
+    private final List<ModelAlternatifSAW> modelForSAW = new ArrayList<>();
+    private final List<ModelAlternatifSAW> modelSAWFinal = new ArrayList<>();
+    private int buttonSawClicked = 0;
+    
+    protected void insertSAW(){
+        ModelAlternatifSAW[] modelArray = new ModelAlternatifSAW[model.size()];
+        model.toArray(modelArray);
+        
+        Double[][] matrix = new Double[modelArray.length][5];
+
+        for (int i = 0; i < modelArray.length; i++) {
+            matrix[i][0] = modelArray[i].getC1() * bobot[0];
+            matrix[i][1] = modelArray[i].getC2() * bobot[1];
+            matrix[i][2] = modelArray[i].getC3() * bobot[2];
+            matrix[i][3] = modelArray[i].getC4() * bobot[3];
+            matrix[i][4] = modelArray[i].getC5() * bobot[4];
+        }
+
+        // Printing the matrix
+        for (int i = 0; i < matrix.length; i++) {
+            ModelAlternatifSAW models = new ModelAlternatifSAW();
+            Double sums = 0.00;
+            models.setId(modelForSAW.get(i).getId());
+            models.setNamahp(modelForSAW.get(i).getNamahp());
+            
+            for (int j = 0; j < matrix[i].length; j++) {
+                sums += matrix[i][j];
+                
+                switch (j) {
+                    case 0:
+                        models.setC1(Double.parseDouble(decimalFormat.format(matrix[i][j])));
+                        break;
+                    case 1:
+                        models.setC2(Double.parseDouble(decimalFormat.format(matrix[i][j])));
+                        break;
+                    case 2: 
+                        models.setC3(Double.parseDouble(decimalFormat.format(matrix[i][j])));
+                        break;
+                    case 3:
+                        models.setC4(Double.parseDouble(decimalFormat.format(matrix[i][j])));
+                        break;
+                    case 4:
+                        models.setC5(Double.parseDouble(decimalFormat.format(matrix[i][j])));
+                        break;
+                    default:
+                        break;
+                }
+                System.out.print(decimalFormat.format(matrix[i][j]) + " ");
+            }
+            models.setSum(Double.parseDouble(decimalFormat.format(sums)));
+            modelSAWFinal.add(models);
+            System.out.println("  " + decimalFormat.format(sums));
+        }
+        
+        ModelAlternatifSAW.deleteAllRowSAW();
+        
+        for(int i=0; i<modelSAWFinal.size(); i++){
+            ModelAlternatifSAW insertTableSAW = new ModelAlternatifSAW();
+            insertTableSAW.setId(i+1);
+            insertTableSAW.setNamahp(modelSAWFinal.get(i).getNamahp());
+            insertTableSAW.setC1(modelSAWFinal.get(i).getC1());
+            insertTableSAW.setC2(modelSAWFinal.get(i).getC2());
+            insertTableSAW.setC3(modelSAWFinal.get(i).getC3());
+            insertTableSAW.setC4(modelSAWFinal.get(i).getC4());
+            insertTableSAW.setC5(modelSAWFinal.get(i).getC5());
+            insertTableSAW.setSum(modelSAWFinal.get(i).getSum());
+            
+            insertTableSAW.insertDataSAW();
+        }
+    }
     
     public double nilaiChipset(String nama)
     {
@@ -169,10 +253,172 @@ public class MainMenu extends javax.swing.JFrame {
         }
     }
     
+    protected void datatable3(){
+    Object [] Baris = {"NO","HANDPHONE","C1","C2","C3","C4","C5"};
+    tabmode = new DefaultTableModel(null, Baris);
+    tabelnormalisasi.setModel(tabmode);
+    model.clear();
+    try {
+    String sql = "Select * from tebelalternatif2";
+        java.sql.Statement stat = conn.createStatement();
+        ResultSet hasil = stat.executeQuery(sql);
+        
+     
+        java.sql.Statement stat1 = conn.createStatement();
+        ResultSet hasil1 = stat1.executeQuery(sql);
+        
+        List<Double> c1Array = new ArrayList<>();
+        List<Double> c2Array = new ArrayList<>();
+        List<Double> c3Array = new ArrayList<>();
+        List<Double> c4Array = new ArrayList<>();
+        List<Double> c5Array = new ArrayList<>();
+        
+        while (hasil1.next()){
+            c1Array.add(hasil1.getDouble("c1"));
+            c2Array.add(hasil1.getDouble("c2"));
+            c3Array.add(hasil1.getDouble("c3"));
+            c4Array.add(hasil1.getDouble("c4"));
+            c5Array.add(hasil1.getDouble("c5"));
+        }
+        
+        Double c1Max = Collections.max(c1Array);
+        Double c2Max = Collections.max(c2Array);
+        Double c3Max = Collections.max(c3Array);
+        Double c4Max = Collections.max(c4Array);
+        Double c5Max = Collections.max(c5Array);
+        
+        double[][] mat = null;
+        int nos = 1;
+        while (hasil.next()){
+            String a = String.valueOf(nos);
+            String b = hasil.getString("namahp");
+            Double c = hasil.getDouble("c1") / c1Max;
+            Double d = hasil.getDouble("c2") / c2Max;
+            Double e = hasil.getDouble("c3") / c3Max;
+            Double f = hasil.getDouble("c4") / c4Max;
+            Double g = hasil.getDouble("c5") / c5Max;
+            nos ++;
+            
+            ModelAlternatifSAW model1 = new ModelAlternatifSAW();
+            model1.setC1(Double.parseDouble(decimalFormat.format(c)));
+            model1.setC2(Double.parseDouble(decimalFormat.format(d)));
+            model1.setC3(Double.parseDouble(decimalFormat.format(e)));
+            model1.setC4(Double.parseDouble(decimalFormat.format(f)));
+            model1.setC5(Double.parseDouble(decimalFormat.format(g)));
+            
+            model.add(model1);
+            
+            ModelAlternatifSAW models = new ModelAlternatifSAW();
+            models.setId(Integer.parseInt(a));
+            models.setNamahp(b);
+            
+            modelForSAW.add(models);
+            
+            String[] data = {
+                a,
+                b,
+                String.valueOf(decimalFormat.format(c)),
+                String.valueOf(decimalFormat.format(d)),
+                String.valueOf(decimalFormat.format(e)),
+                String.valueOf(decimalFormat.format(f)),
+                String.valueOf(decimalFormat.format(g)),
+            };
+            tabmode.addRow(data);
+        }
+    }catch (SQLException e){
+        }
+    }
+    
+    protected void datatable4(){
+    Object [] Baris = {"NO","HANDPHONE","C1","C2","C3","C4","C5","TOTAL","RANKING"};
+    tabmode = new DefaultTableModel(null, Baris);
+    tabelhasil.setModel(tabmode);
+    try {
+    String sql = "SELECT *, RANK() OVER (ORDER BY sum DESC) AS ranking FROM tabelsaw";
+        java.sql.Statement stat = conn.createStatement();
+        ResultSet hasil = stat.executeQuery(sql);
+        while (hasil.next()){
+            String a = hasil.getString("id");
+            String c = hasil.getString("namahp");
+            String d = hasil.getString("c1");
+            String e = hasil.getString("c2");
+            String f = hasil.getString("c3");
+            String g = hasil.getString("c4");
+            String h = hasil.getString("c5");
+            String i = hasil.getString("sum");
+            String j = hasil.getString("ranking");
+            String[] data={a,c,d,e,f,g,h,i,j};
+            tabmode.addRow(data);
+        }
+    }catch (SQLException e){
+        }
+    }
+    
+    protected void datatable5(){
+    Object [] Baris = {"NO","HANDPHPONE","C1","C2","C3","C4","C5"};
+    tabmode = new DefaultTableModel(null, Baris);
+    tabelnormalisasi.setModel(tabmode);
+    try {
+    String sql = "Select * from tebelalternatif2";
+        java.sql.Statement stat = conn.createStatement();
+        ResultSet hasil = stat.executeQuery(sql);
+        
+     
+        java.sql.Statement stat1 = conn.createStatement();
+        ResultSet hasil1 = stat1.executeQuery(sql);
+        
+        List<Double> c1Array = new ArrayList<>();
+        List<Double> c2Array = new ArrayList<>();
+        List<Double> c3Array = new ArrayList<>();
+        List<Double> c4Array = new ArrayList<>();
+        List<Double> c5Array = new ArrayList<>();
+        
+        while (hasil1.next()){
+            c1Array.add(hasil1.getDouble("c1"));
+            c2Array.add(hasil1.getDouble("c2"));
+            c3Array.add(hasil1.getDouble("c3"));
+            c4Array.add(hasil1.getDouble("c4"));
+            c5Array.add(hasil1.getDouble("c5"));
+        }
+        
+        Double c1Max = Collections.max(c1Array);
+        Double c2Max = Collections.max(c2Array);
+        Double c3Max = Collections.max(c3Array);
+        Double c4Max = Collections.max(c4Array);
+        Double c5Max = Collections.max(c5Array);
+        
+        double[][] mat = null;
+        int nos = 1;
+        while (hasil.next()){
+            String a = String.valueOf(nos);
+            String b = hasil.getString("namahp");
+            Double c = hasil.getDouble("c1") / c1Max;
+            Double d = hasil.getDouble("c2") / c2Max;
+            Double e = hasil.getDouble("c3") / c3Max;
+            Double f = hasil.getDouble("c4") / c4Max;
+            Double g = hasil.getDouble("c5") / c5Max;
+            nos ++;
+            
+            
+            String[] data = {
+                a,
+                b,
+                String.valueOf(decimalFormat.format(c)),
+                String.valueOf(decimalFormat.format(d)),
+                String.valueOf(decimalFormat.format(e)),
+                String.valueOf(decimalFormat.format(f)),
+                String.valueOf(decimalFormat.format(g)),
+            };
+            tabmode.addRow(data);
+        }
+    }catch (SQLException e){
+        }
+    }
+    
     protected void datatable6(){
     Object [] Baris = {"ID","KRITERA","KETERANGAN","NILAI"};
-    tabmode = new DefaultTableModel(null, Baris);
-    tabelkriteria.setModel(tabmode);            
+    tabmode2 = new DefaultTableModel(null, Baris);
+    tabelkriteria.setModel(tabmode2);            
     try {
     String sql = "Select * from tabelkriteria";
     
@@ -185,7 +431,7 @@ public class MainMenu extends javax.swing.JFrame {
             String d = hasil.getString("nilai");
             
             String[] data={a,b,c,d};
-            tabmode.addRow(data);
+            tabmode2.addRow(data);
         }
     }catch (Exception e){
         }
@@ -222,6 +468,7 @@ public class MainMenu extends javax.swing.JFrame {
         btnHapus1 = new javax.swing.JButton();
         jScrollPane6 = new javax.swing.JScrollPane();
         tabelkriteria = new javax.swing.JTable();
+        btnClear2 = new javax.swing.JButton();
         panelhp = new javax.swing.JPanel();
         btnClear = new javax.swing.JButton();
         jLabel6 = new javax.swing.JLabel();
@@ -245,7 +492,13 @@ public class MainMenu extends javax.swing.JFrame {
         btnUbah = new javax.swing.JButton();
         btnSimpan = new javax.swing.JButton();
         panelhasil = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        btnCetak = new javax.swing.JButton();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        tabelnormalisasi = new javax.swing.JTable();
+        btnProses = new javax.swing.JButton();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        tabelhasil = new javax.swing.JTable();
         panelinfo = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
 
@@ -431,6 +684,26 @@ public class MainMenu extends javax.swing.JFrame {
         });
         jScrollPane6.setViewportView(tabelkriteria);
 
+        btnClear2.setBackground(new java.awt.Color(255, 255, 255));
+        btnClear2.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnClear2.setText("Bersihkan");
+        btnClear2.setContentAreaFilled(false);
+        btnClear2.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnClear2.setOpaque(true);
+        btnClear2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btnClear2MouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btnClear2MouseExited(evt);
+            }
+        });
+        btnClear2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClear2ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout panelkriteriaLayout = new javax.swing.GroupLayout(panelkriteria);
         panelkriteria.setLayout(panelkriteriaLayout);
         panelkriteriaLayout.setHorizontalGroup(
@@ -456,13 +729,19 @@ public class MainMenu extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(panelkriteriaLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 710, Short.MAX_VALUE)
+                .addGroup(panelkriteriaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 710, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelkriteriaLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btnClear2, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         panelkriteriaLayout.setVerticalGroup(
             panelkriteriaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelkriteriaLayout.createSequentialGroup()
-                .addGap(59, 59, 59)
+                .addContainerGap()
+                .addComponent(btnClear2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(23, 23, 23)
                 .addGroup(panelkriteriaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(labelKodeSupplier7, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(idkriteria, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -513,7 +792,7 @@ public class MainMenu extends javax.swing.JFrame {
 
         jLabel6.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel6.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel6.setText("DATA PEKERJAAN");
+        jLabel6.setText("DATA HANDPHONE");
 
         tabelalternatif1.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         tabelalternatif1.setModel(new javax.swing.table.DefaultTableModel(
@@ -698,41 +977,41 @@ public class MainMenu extends javax.swing.JFrame {
         panelhpLayout.setHorizontalGroup(
             panelhpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelhpLayout.createSequentialGroup()
-                .addGap(133, 133, 133)
-                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 355, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(59, 59, 59)
-                .addComponent(btnClear, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
-                .addGap(44, 44, 44))
-            .addGroup(panelhpLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1)
-                .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelhpLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(panelhpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 387, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(panelhpLayout.createSequentialGroup()
-                        .addComponent(btnSimpan, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnUbah, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(45, 45, 45)
-                        .addComponent(btnHapus, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(18, 18, 18)
-                .addGroup(panelhpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(labelKodeSupplier1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(labelKodeSupplier2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(labelKodeSupplier3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(labelKodeSupplier4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(labelKodeSupplier5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(labelKodeSupplier6, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
                 .addGroup(panelhpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(c2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(c1, javax.swing.GroupLayout.Alignment.TRAILING, 0, 172, Short.MAX_VALUE)
-                    .addComponent(c4, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(c3, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(tnamahp, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(c5))
+                    .addGroup(panelhpLayout.createSequentialGroup()
+                        .addGap(133, 133, 133)
+                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 355, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(93, 93, 93)
+                        .addComponent(btnClear, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE))
+                    .addGroup(panelhpLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane1))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelhpLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(panelhpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 387, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(panelhpLayout.createSequentialGroup()
+                                .addComponent(btnSimpan, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(btnUbah, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(45, 45, 45)
+                                .addComponent(btnHapus, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(18, 18, 18)
+                        .addGroup(panelhpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(labelKodeSupplier1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(labelKodeSupplier2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(labelKodeSupplier3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(labelKodeSupplier4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(labelKodeSupplier5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(labelKodeSupplier6, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(panelhpLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(c2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(c1, javax.swing.GroupLayout.Alignment.TRAILING, 0, 172, Short.MAX_VALUE)
+                            .addComponent(c4, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(c3, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(tnamahp, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(c5))))
                 .addContainerGap())
         );
         panelhpLayout.setVerticalGroup(
@@ -784,21 +1063,133 @@ public class MainMenu extends javax.swing.JFrame {
 
         panelhasil.setBackground(new java.awt.Color(0, 177, 79));
 
-        jLabel3.setText("HASIL");
+        jLabel7.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel7.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel7.setText("HASIL");
+
+        btnCetak.setBackground(new java.awt.Color(204, 204, 204));
+        btnCetak.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        btnCetak.setText("CETAK");
+        btnCetak.setContentAreaFilled(false);
+        btnCetak.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnCetak.setIconTextGap(0);
+        btnCetak.setOpaque(true);
+        btnCetak.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btnCetakMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btnCetakMouseExited(evt);
+            }
+        });
+        btnCetak.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCetakActionPerformed(evt);
+            }
+        });
+
+        tabelnormalisasi.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        tabelnormalisasi.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4", "Title 5", "Title 6", "Title 7"
+            }
+        ));
+        tabelnormalisasi.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        tabelnormalisasi.setRowHeight(30);
+        tabelnormalisasi.setRowMargin(2);
+        tabelnormalisasi.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tabelnormalisasiMouseClicked(evt);
+            }
+        });
+        jScrollPane3.setViewportView(tabelnormalisasi);
+
+        btnProses.setBackground(new java.awt.Color(204, 204, 204));
+        btnProses.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        btnProses.setIcon(new javax.swing.ImageIcon(getClass().getResource("/gambar2/hasil-transformed.png"))); // NOI18N
+        btnProses.setText("PROSES");
+        btnProses.setContentAreaFilled(false);
+        btnProses.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnProses.setIconTextGap(0);
+        btnProses.setOpaque(true);
+        btnProses.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btnProsesMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btnProsesMouseExited(evt);
+            }
+        });
+        btnProses.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnProsesActionPerformed(evt);
+            }
+        });
+
+        tabelhasil.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        tabelhasil.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4", "Title 5", "Title 6", "Title 7"
+            }
+        ));
+        tabelhasil.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        tabelhasil.setRowHeight(30);
+        tabelhasil.setRowMargin(2);
+        tabelhasil.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tabelhasilMouseClicked(evt);
+            }
+        });
+        jScrollPane4.setViewportView(tabelhasil);
 
         javax.swing.GroupLayout panelhasilLayout = new javax.swing.GroupLayout(panelhasil);
         panelhasil.setLayout(panelhasilLayout);
         panelhasilLayout.setHorizontalGroup(
             panelhasilLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelhasilLayout.createSequentialGroup()
-                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 485, Short.MAX_VALUE))
+                .addContainerGap()
+                .addGroup(panelhasilLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 710, Short.MAX_VALUE)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(panelhasilLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(79, 79, 79)
+                        .addComponent(btnCetak, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+            .addGroup(panelhasilLayout.createSequentialGroup()
+                .addGap(322, 322, 322)
+                .addComponent(btnProses, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         panelhasilLayout.setVerticalGroup(
             panelhasilLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelhasilLayout.createSequentialGroup()
-                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 414, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelhasilLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(panelhasilLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
+                    .addComponent(btnCetak, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnProses, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         panelmain.add(panelhasil, "card4");
@@ -872,10 +1263,14 @@ public class MainMenu extends javax.swing.JFrame {
     }//GEN-LAST:event_bdatahpActionPerformed
 
     private void bhasilActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bhasilActionPerformed
-        // TODO add your handling code here:
+        ModelAlternatifSAW.deleteAllRowSAW();
         panelmain.removeAll();
         panelmain.repaint();
         panelmain.revalidate();
+        
+        datatable4();
+        datatable5();
+        
         //add panel
         panelmain.add(panelhasil);
         panelmain.repaint();
@@ -967,10 +1362,10 @@ public class MainMenu extends javax.swing.JFrame {
 
     private void tabelkriteriaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabelkriteriaMouseClicked
         int bar = tabelkriteria.getSelectedRow();
-        String a = tabmode.getValueAt (bar, 0).toString();
-        String b = tabmode.getValueAt (bar, 1).toString();
-        String c = tabmode.getValueAt (bar, 2).toString();
-        String d = tabmode.getValueAt (bar, 3).toString();
+        String a = tabmode2.getValueAt (bar, 0).toString();
+        String b = tabmode2.getValueAt (bar, 1).toString();
+        String c = tabmode2.getValueAt (bar, 2).toString();
+        String d = tabmode2.getValueAt (bar, 3).toString();
 
         idkriteria.setText(a);
         kriteria.setSelectedItem(b);
@@ -989,33 +1384,25 @@ public class MainMenu extends javax.swing.JFrame {
     }//GEN-LAST:event_btnClearMouseExited
 
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
-//        kosong();
+        kosongdatahp();
     }//GEN-LAST:event_btnClearActionPerformed
 
     private void tabelalternatif1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabelalternatif1MouseClicked
-//        int bar = tabelalternatif1.getSelectedRow();
-//        String a = tabmode1.getValueAt (bar, 0).toString();
-//        String b = tabmode1.getValueAt (bar, 1).toString();
-//        String c = tabmode1.getValueAt (bar, 2).toString();
-//        String d = tabmode1.getValueAt (bar, 3).toString();
-//        String e = tabmode1.getValueAt (bar, 4).toString();
-//        String f = tabmode1.getValueAt (bar, 5).toString();
-//        String g = tabmode1.getValueAt (bar, 6).toString();
-//        String h = tabmode1.getValueAt (bar, 7).toString();
-//
-//        tnamapekerjaan.setText(c);
-//        c1.setSelectedItem(d);
-//        c2.setSelectedItem(e);
-//        c3.setSelectedItem(f);
-//        c4.setSelectedItem(g);
-//        c5.setText(h);
-//        try{
-//            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-//            Date tanggal = dateFormat.parse(b);
-//            tanggalmasuk.setDate(tanggal);
-//        }catch(Exception ex){
-//            JOptionPane.showMessageDialog(null, "Format tanggal salah: " + ex.getMessage());
-//        }
+        int bar = tabelalternatif1.getSelectedRow();
+        String a = tabmode1.getValueAt (bar, 0).toString();
+        String b = tabmode1.getValueAt (bar, 1).toString();
+        String c = tabmode1.getValueAt (bar, 2).toString();
+        String d = tabmode1.getValueAt (bar, 3).toString();
+        String e = tabmode1.getValueAt (bar, 4).toString();
+        String f = tabmode1.getValueAt (bar, 5).toString();
+        String g = tabmode1.getValueAt (bar, 6).toString();
+
+        tnamahp.setText(b);
+        c1.setSelectedItem(c);
+        c2.setSelectedItem(d);
+        c3.setSelectedItem(e);
+        c4.setSelectedItem(f);
+        c5.setText(g);
     }//GEN-LAST:event_tabelalternatif1MouseClicked
 
     private void tabelalternatif1MouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabelalternatif1MouseEntered
@@ -1057,26 +1444,26 @@ public class MainMenu extends javax.swing.JFrame {
     }//GEN-LAST:event_btnHapusMouseExited
 
     private void btnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHapusActionPerformed
-//        int ok = JOptionPane.showConfirmDialog(null,"Hapus","Konfirmasi Dialog", JOptionPane.YES_NO_OPTION);
-//        if (ok==0){
-//            String sql = "DELETE from tabelalternatif1 WHERE namapekerjaan = '"+tnamapekerjaan.getText()+"' ";
-//            String sql2 = "DELETE from tabelalternatif2 WHERE namapekerjaan = '"+tnamapekerjaan.getText()+"' ";
-//            try {
-//                PreparedStatement stat = conn.prepareStatement(sql);
-//                PreparedStatement stats = conn.prepareStatement(sql2);
-//                stat.executeUpdate();
-//                stats.executeUpdate();
-//
-//                JOptionPane.showMessageDialog(null, "Data berhasil dihapus");
-//                kosong();
-//                tnamapekerjaan.requestFocus();
-//                datatable1();
-//                datatable2();
+        int ok = JOptionPane.showConfirmDialog(null,"Hapus","Konfirmasi Dialog", JOptionPane.YES_NO_OPTION);
+        if (ok==0){
+            String sql = "DELETE from tabelalternatif1 WHERE namahp = '"+tnamahp.getText()+"' ";
+            String sql2 = "DELETE from tebelalternatif2 WHERE namahp = '"+tnamahp.getText()+"' ";
+            try {
+                PreparedStatement stat = conn.prepareStatement(sql);
+                PreparedStatement stats = conn.prepareStatement(sql2);
+                stat.executeUpdate();
+                stats.executeUpdate();
+
+                JOptionPane.showMessageDialog(null, "Data berhasil dihapus");
+                kosongdatahp();
+                tnamahp.requestFocus();
+                datatable1();
+                datatable2();
 //                datatable3();
-//            } catch (SQLException e){
-//                JOptionPane.showMessageDialog(null, "Data gagal dihapus"+e);
-//            }
-//        }
+            } catch (SQLException e){
+                JOptionPane.showMessageDialog(null, "Data gagal dihapus"+e);
+            }
+        }
     }//GEN-LAST:event_btnHapusActionPerformed
 
     private void btnUbahMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnUbahMouseEntered
@@ -1090,132 +1477,95 @@ public class MainMenu extends javax.swing.JFrame {
     }//GEN-LAST:event_btnUbahMouseExited
 
     private void btnUbahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUbahActionPerformed
-//        String tampilan = "yyyy-MM-dd";
-//        SimpleDateFormat fm = new SimpleDateFormat(tampilan);
-//        String tanggal  = String.valueOf(fm.format(tanggalmasuk.getDate()));
-//        try{
-//            String sql = "UPDATE tabelalternatif1 SET tanggalmasuk=?, c1=?, c2=?, c3=?, c4=?, c5=? WHERE namapekerjaan = ?";
-//            PreparedStatement stat = conn.prepareStatement(sql);
-//            stat.setString(1, tanggal);
-//            stat.setString(2, c1.getSelectedItem().toString());
-//            stat.setString(3, c2.getSelectedItem().toString());
-//            stat.setString(4, c3.getSelectedItem().toString());
-//            stat.setString(5, c4.getSelectedItem().toString());
-//            stat.setString(6, c5.getText());
-//            stat.setString(7, tnamapekerjaan.getText());
-//
-//            String sql2 = "UPDATE tabelalternatif2 SET tanggalmasuk=?, c1=?, c2=?, c3 =?, c4=?, c5=? WHERE namapekerjaan = ?";
-//            PreparedStatement stats = conn.prepareStatement(sql2);
-//
-//            String pilihc1;
-//            double c1Double;
-//            pilihc1 = String.valueOf(c1.getSelectedItem());
-//            c1Double = nilaiFasilitas(String.valueOf(c1.getSelectedItem()));
-//            //                if (pilihc1.equals ("Listrik & Penerangan")) {
-//                //                    c1Double = 5;
-//                //                }else if (pilihc1.equals ("Sistem Plumbing")){
-//                //                    c1Double = 4;
-//                //                }else if (pilihc1.equals ("Sistem Keamanan")){
-//                //                    c1Double = 3;
-//                //                }else if (pilihc1.equals ("Struktural Gedung")){
-//                //                    c1Double = 2;
-//                //                }else if (pilihc1.equals ("Sistem HVAC")){
-//                //                    c1Double = 1;
-//                //                }else {
-//                //                    c1Double = 0;
-//                //                }
-//
-//            String pilihc2;
-//            double c2Double;
-//            pilihc2 = String.valueOf(c2.getSelectedItem());
-//            c2Double = nilaiFasilitas(String.valueOf(c2.getSelectedItem()));
-//            //                if (pilihc2.equals ("R.PIMPINAN")) {
-//                //                    c2Double = 5;
-//                //                }else if (pilihc2.equals ("R.KARYAWAN")){
-//                //                    c2Double = 4;
-//                //                }else if (pilihc2.equals ("R.DOSEN")){
-//                //                    c2Double = 3;
-//                //                }else if (pilihc2.equals ("LABORATORIUM")){
-//                //                    c2Double = 2;
-//                //                }else if (pilihc2.equals ("R.KELAS")){
-//                //                    c2Double = 1;
-//                //                }else {
-//                //                    c2Double = 0;
-//                //                }
-//
-//            String pilihc3;
-//            double c3Double;
-//            pilihc3 = String.valueOf(c3.getSelectedItem());
-//
-//            if (pilihc3.equals ("Sangat Aman")) {
-//                c3Double = 5;
-//            }else if (pilihc3.equals ("Aman")){
-//                c3Double = 4;
-//            }else if (pilihc3.equals ("Cukup")){
-//                c3Double = 3;
-//            }else if (pilihc3.equals ("Berbahaya")){
-//                c3Double = 2;
-//            }else if (pilihc3.equals ("Sangat Berbahaya")){
-//                c3Double = 1;
-//            }else {
-//                c3Double = 0;
-//            }
-//
-//            String pilihc4;
-//            double c4Double;
-//            pilihc4 = String.valueOf(c4.getSelectedItem());
-//
-//            if (pilihc4.equals ("Sangat Penting")) {
-//                c4Double = 5;
-//            }else if (pilihc4.equals ("Penting")){
-//                c4Double = 4;
-//            }else if (pilihc4.equals ("Cukup")){
-//                c4Double = 3;
-//            }else if (pilihc4.equals ("Kurang Penting")){
-//                c4Double = 2;
-//            }else if (pilihc4.equals ("Tidak Penting")){
-//                c4Double = 1;
-//            }else {
-//                c4Double = 0;
-//            }
-//
-//            String nilai = c5.getText();
-//
-//            int c5Double;
-//            int nilaikriteria = Integer.parseInt(nilai); // Mengubah nilai dari String ke tipe data int
-//
-//            if (nilaikriteria >= 0 && nilaikriteria < 200000) {
-//                c5Double = 5;
-//            } else if (nilaikriteria >= 200000 && nilaikriteria < 400000) {
-//                c5Double = 4;
-//            } else if (nilaikriteria >= 400000 && nilaikriteria < 600000) {
-//                c5Double = 3;
-//            } else if (nilaikriteria >= 600000 && nilaikriteria < 1000000) {
-//                c5Double = 2;
-//            } else if (nilaikriteria >= 1000000) {
-//                c5Double = 1;
-//            } else {
-//                c5Double = 0; // Nilai default atau sesuai dengan kebutuhan Anda
-//            }
-//
-//            stats.setString(1, tanggal);
-//            stats.setString(2, String.valueOf(c1Double));
-//            stats.setString(3, String.valueOf(c2Double));
-//            stats.setString(4, String.valueOf(c3Double));
-//            stats.setString(5, String.valueOf(c4Double));
-//            stats.setString(6, String.valueOf(c5Double));
-//            stats.setString(7, tnamapekerjaan.getText());
-//
-//            stat.executeUpdate();
-//            stats.executeUpdate();
-//            JOptionPane.showMessageDialog(null,"Data Berhasil diubah");
-//            kosong();
-//            tnamapekerjaan.requestFocus();
-//            datatable1();
-//            datatable2();
-//        }catch (SQLException e){
-//            JOptionPane.showMessageDialog(null, "Data Gagal Diubah"+e);
-//        }
+        try{
+            String sql = "UPDATE tabelalternatif1 SET c1=?, c2=?, c3=?, c4=?, c5=? WHERE namahp = ?";
+            PreparedStatement stat = conn.prepareStatement(sql);
+            stat.setString(1, c1.getSelectedItem().toString());
+            stat.setString(2, c2.getSelectedItem().toString());
+            stat.setString(3, c3.getSelectedItem().toString());
+            stat.setString(4, c4.getSelectedItem().toString());
+            stat.setString(5, c5.getText());
+            stat.setString(6, tnamahp.getText());
+
+            String sql2 = "UPDATE tebelalternatif2 SET c1=?, c2=?, c3 =?, c4=?, c5=? WHERE namahp = ?";
+            PreparedStatement stats = conn.prepareStatement(sql2);
+
+            String pilihc1;
+            double c1Double;
+            pilihc1 = String.valueOf(c1.getSelectedItem());
+            c1Double = nilaiChipset(String.valueOf(c1.getSelectedItem()));
+ 
+            String pilihc2;
+            double c2Double;
+            pilihc2 = String.valueOf(c2.getSelectedItem());
+            c2Double = nilaiChipset(String.valueOf(c2.getSelectedItem()));
+      
+            String pilihc3;
+            double c3Double;
+            pilihc3 = String.valueOf(c3.getSelectedItem());
+
+            if (pilihc3.equals ("512 GB")){
+                c3Double = 4;
+            }else if (pilihc3.equals ("256 GB")){
+                c3Double = 3;
+            }else if (pilihc3.equals ("128 GB")){
+                c3Double = 2;
+            }else if (pilihc3.equals ("64 GB")){
+                c3Double = 1;
+            }else {
+                c3Double = 0;
+            }
+
+            String pilihc4;
+            double c4Double;
+            pilihc4 = String.valueOf(c4.getSelectedItem());
+
+            if (pilihc4.equals ("7000 mAh")){
+                c4Double = 4;
+            }else if (pilihc4.equals ("6000 mAh")){
+                c4Double = 3;
+            }else if (pilihc4.equals ("5600 mAh")){
+                c4Double = 2;
+            }else if (pilihc4.equals ("5000 mAh")){
+                c4Double = 1;
+            }else {
+                c4Double = 0;
+            }
+
+            String nilai = c5.getText();
+
+            int c5Double;
+            int nilaikriteria = Integer.parseInt(nilai); // Mengubah nilai dari String ke tipe data int
+
+            if (nilaikriteria >= 0 && nilaikriteria < 1500000) {
+                c5Double = 4;
+            } else if (nilaikriteria >= 1500000 && nilaikriteria < 2000000) {
+                c5Double = 3;
+            } else if (nilaikriteria >= 2000000 && nilaikriteria < 2500000) {
+                c5Double = 2;
+            } else if (nilaikriteria >= 2500000) {
+                c5Double = 1;
+            } else {
+                c5Double = 0;
+            }
+
+            stats.setString(1, String.valueOf(c1Double));
+            stats.setString(2, String.valueOf(c2Double));
+            stats.setString(3, String.valueOf(c3Double));
+            stats.setString(4, String.valueOf(c4Double));
+            stats.setString(5, String.valueOf(c5Double));
+            stats.setString(6, tnamahp.getText());
+
+            stat.executeUpdate();
+            stats.executeUpdate();
+            JOptionPane.showMessageDialog(null,"Data Berhasil diubah");
+            kosongdatahp();
+            tnamahp.requestFocus();
+            datatable1();
+            datatable2();
+        }catch (SQLException e){
+            JOptionPane.showMessageDialog(null, "Data Gagal Diubah"+e);
+        }
     }//GEN-LAST:event_btnUbahActionPerformed
 
     private void btnSimpanMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnSimpanMouseEntered
@@ -1325,6 +1675,73 @@ public class MainMenu extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnSimpanActionPerformed
 
+    private void btnClear2MouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnClear2MouseEntered
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnClear2MouseEntered
+
+    private void btnClear2MouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnClear2MouseExited
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnClear2MouseExited
+
+    private void btnClear2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClear2ActionPerformed
+        kosongkriteria();
+    }//GEN-LAST:event_btnClear2ActionPerformed
+
+    private void btnCetakMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCetakMouseEntered
+        btnCetak.setBackground(new Color(0,0,204));
+        btnCetak.setForeground(Color.white);
+    }//GEN-LAST:event_btnCetakMouseEntered
+
+    private void btnCetakMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCetakMouseExited
+        btnCetak.setBackground(new Color(204,204,204));
+        btnCetak.setForeground(Color.black);
+    }//GEN-LAST:event_btnCetakMouseExited
+
+    private void btnCetakActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCetakActionPerformed
+        //TODO add your handling code here:
+//        try {
+//            String namaFile = "src/Report/report1.jasper";
+//            Connection conn = new koneksi().connect();
+//            HashMap parameter = new HashMap();
+//            File report_file = new File(namaFile);
+//            JasperReport jasperReport = (JasperReport) JRLoader.loadObject(report_file.getPath());
+//            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameter, conn);
+//            JasperViewer.viewReport(jasperPrint, false); //coba
+//            JasperViewer.setDefaultLookAndFeelDecorated(true);
+//        } catch (Exception e) {
+//            JOptionPane.showMessageDialog(null,e.getMessage());
+//        }
+    }//GEN-LAST:event_btnCetakActionPerformed
+
+    private void tabelnormalisasiMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabelnormalisasiMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tabelnormalisasiMouseClicked
+
+    private void btnProsesMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnProsesMouseEntered
+        btnProses.setBackground(new Color(0,0,204));
+        btnProses.setForeground(Color.white);
+    }//GEN-LAST:event_btnProsesMouseEntered
+
+    private void btnProsesMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnProsesMouseExited
+        btnProses.setBackground(new Color(204,204,204));
+        btnProses.setForeground(Color.black);
+    }//GEN-LAST:event_btnProsesMouseExited
+
+    private void btnProsesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProsesActionPerformed
+        if(buttonSawClicked == 0) {
+            insertSAW();
+            datatable4();
+            buttonSawClicked++;
+        } else {
+            System.err.println("Tidak bisa menghitung lebih dari 1 kali");
+            JOptionPane.showMessageDialog(null, "Tidak bisa menghitung kebih dari 1 kali");
+        }
+    }//GEN-LAST:event_btnProsesActionPerformed
+
+    private void tabelhasilMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabelhasilMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tabelhasilMouseClicked
+
     /**
      * @param args the command line arguments
      */
@@ -1365,9 +1782,12 @@ public class MainMenu extends javax.swing.JFrame {
     private javax.swing.JButton bhasil;
     private javax.swing.JButton bhasil1;
     private javax.swing.JButton bkriteria;
+    private javax.swing.JButton btnCetak;
     private javax.swing.JButton btnClear;
+    private javax.swing.JButton btnClear2;
     private javax.swing.JButton btnHapus;
     private javax.swing.JButton btnHapus1;
+    private javax.swing.JButton btnProses;
     private javax.swing.JButton btnSimpan;
     private javax.swing.JButton btnSimpan1;
     private javax.swing.JButton btnUbah;
@@ -1377,12 +1797,14 @@ public class MainMenu extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> c4;
     private javax.swing.JTextField c5;
     private javax.swing.JTextField idkriteria;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JTextField keterangan;
     private javax.swing.JComboBox<String> kriteria;
@@ -1406,7 +1828,9 @@ public class MainMenu extends javax.swing.JFrame {
     private javax.swing.JPanel penelutama;
     private javax.swing.JTable tabelalternatif1;
     private javax.swing.JTable tabelalternatif2;
+    private javax.swing.JTable tabelhasil;
     private javax.swing.JTable tabelkriteria;
+    private javax.swing.JTable tabelnormalisasi;
     private javax.swing.JTextField tnamahp;
     // End of variables declaration//GEN-END:variables
 }

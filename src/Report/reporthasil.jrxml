@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="null" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="bb9d9d0c-ceaf-4ca5-9c2a-f73cbbcc5d57">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<queryString language="SQL">
+		<![CDATA[select * from tabelsaw;]]>
+	</queryString>
+	<field name="id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="namahp" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="c1" class="java.lang.Double">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="c2" class="java.lang.Double">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="c3" class="java.lang.Double">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="c4" class="java.lang.Double">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="c5" class="java.lang.Double">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="sum" class="java.lang.Double">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="79" splitType="Stretch">
+			<image>
+				<reportElement uuid="8650f5ac-01bc-4735-a0e9-f654ed3a22a7" x="19" y="12" width="60" height="57"/>
+				<imageExpression><![CDATA["C:\\Users\\lenov\\Documents\\NetBeansProjects\\SPK_PemilihanHP\\src\\gambar2\\logo ojol.jpeg"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement uuid="632dae7b-59e1-4739-b2d5-4b9fd3305af7" x="104" y="0" width="367" height="41"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[DAFTAR REKOMENDASI HANDPHONE TERBAIK]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="632dae7b-59e1-4739-b2d5-4b9fd3305af7" x="104" y="41" width="367" height="38"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[UNTUK OJEK ONLINE]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="12" splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="21" splitType="Stretch">
+			<staticText>
+				<reportElement uuid="1d5fbe19-2b9a-4c96-88cd-9e526a1fd73a" x="0" y="0" width="69" height="20"/>
+				<textElement/>
+				<text><![CDATA[id]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="a64e95ba-88d3-4cd3-998a-2fe6baf1bb23" x="69" y="0" width="69" height="20"/>
+				<textElement/>
+				<text><![CDATA[namahp]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="2a20791c-57dd-480c-9627-01f55bd46f14" x="138" y="0" width="69" height="20"/>
+				<textElement/>
+				<text><![CDATA[c1]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="abea2c9b-5649-4a76-85c6-e2e0c283b0b6" x="207" y="0" width="69" height="20"/>
+				<textElement/>
+				<text><![CDATA[c2]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="e1c26379-d2e6-4a82-bb21-2ba35cfc51bc" x="276" y="0" width="69" height="20"/>
+				<textElement/>
+				<text><![CDATA[c3]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="64505679-bc77-44d3-89fe-46f32425dcb7" x="345" y="0" width="69" height="20"/>
+				<textElement/>
+				<text><![CDATA[c4]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="fa8685fd-fb6a-40eb-8674-30c5eb8107ed" x="414" y="0" width="69" height="20"/>
+				<textElement/>
+				<text><![CDATA[c5]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="edd16210-ad15-4607-bc13-f7e0b2680f8a" x="483" y="0" width="69" height="20"/>
+				<textElement/>
+				<text><![CDATA[sum]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="21" splitType="Stretch">
+			<textField>
+				<reportElement uuid="dc3094b9-9f47-4771-b8f5-d6da68984938" x="0" y="0" width="69" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{id}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="3a99b33d-e8e2-47e7-9693-a69b48666311" x="69" y="0" width="69" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{namahp}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="113e1353-9d70-4992-8615-475c1ea3f525" x="138" y="0" width="69" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{c1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="95e2fa1e-fbbe-49e9-a5e0-232f0a0b56e9" x="207" y="0" width="69" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{c2}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="e51319ec-5dcd-45cc-82e3-8e2f448a33b0" x="276" y="0" width="69" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{c3}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="35c9de1a-8185-47f2-a5e8-b96a3ef1965d" x="345" y="0" width="69" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{c4}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="2a361c99-1d80-4610-bc64-099a6a0c2c8f" x="414" y="0" width="69" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{c5}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="583a4e56-9f62-4c15-9851-43d724c13056" x="483" y="0" width="69" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{sum}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

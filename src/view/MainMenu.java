@@ -8,6 +8,7 @@ package view;
 import connectionDB.koneksi;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,10 +17,16 @@ import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import model.ModelAlternatifSAW;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.util.JRLoader;
+import net.sf.jasperreports.view.JasperViewer;
 
 /**
  *
@@ -1698,19 +1705,18 @@ public class MainMenu extends javax.swing.JFrame {
     }//GEN-LAST:event_btnCetakMouseExited
 
     private void btnCetakActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCetakActionPerformed
-        //TODO add your handling code here:
-//        try {
-//            String namaFile = "src/Report/report1.jasper";
-//            Connection conn = new koneksi().connect();
-//            HashMap parameter = new HashMap();
-//            File report_file = new File(namaFile);
-//            JasperReport jasperReport = (JasperReport) JRLoader.loadObject(report_file.getPath());
-//            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameter, conn);
-//            JasperViewer.viewReport(jasperPrint, false); //coba
-//            JasperViewer.setDefaultLookAndFeelDecorated(true);
-//        } catch (Exception e) {
-//            JOptionPane.showMessageDialog(null,e.getMessage());
-//        }
+        try {
+            String namaFile = "src/Report/reporthasil.jasper";
+            Connection conn = new koneksi().connect();
+            HashMap parameter = new HashMap();
+            File report_file = new File(namaFile);
+            JasperReport jasperReport = (JasperReport) JRLoader.loadObject(report_file.getPath());
+            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameter, conn);
+            JasperViewer.viewReport(jasperPrint, false);
+            JasperViewer.setDefaultLookAndFeelDecorated(true);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null,e.getMessage());
+        }
     }//GEN-LAST:event_btnCetakActionPerformed
 
     private void tabelnormalisasiMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabelnormalisasiMouseClicked

@@ -126,6 +126,11 @@ public class login extends javax.swing.JFrame {
                 passwordActionPerformed(evt);
             }
         });
+        password.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                passwordKeyPressed(evt);
+            }
+        });
 
         javax.swing.GroupLayout panelloginLayout = new javax.swing.GroupLayout(panellogin);
         panellogin.setLayout(panelloginLayout);
@@ -406,6 +411,12 @@ public class login extends javax.swing.JFrame {
     private void passwordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_passwordActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_passwordActionPerformed
+
+    private void passwordKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_passwordKeyPressed
+        if (evt.getKeyCode()== KeyEvent.VK_ENTER) {
+            btnLoginActionPerformed(new ActionEvent(evt.getSource(), evt.getID(), "Key Press Login"));
+        }
+    }//GEN-LAST:event_passwordKeyPressed
 
     /**
      * @param args the command line arguments

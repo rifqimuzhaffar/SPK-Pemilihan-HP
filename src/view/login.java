@@ -185,7 +185,7 @@ public class login extends javax.swing.JFrame {
 
         jLabel7.setForeground(new java.awt.Color(102, 102, 102));
         jLabel7.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel7.setText("Masuk ke akun Anda");
+        jLabel7.setText("Buat akun Anda");
 
         jLabel8.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel8.setText("Username");
@@ -355,6 +355,9 @@ public class login extends javax.swing.JFrame {
         panelmain.add(panelregister);
         panelmain.repaint();
         panelmain.revalidate();
+        
+        username.setText("");
+        password.setText("");
     }//GEN-LAST:event_btnRegisterActionPerformed
 
     private void regisuserKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_regisuserKeyPressed
@@ -368,15 +371,27 @@ public class login extends javax.swing.JFrame {
 
         if(username.isEmpty() || password.isEmpty() || repassword.isEmpty()){
         JOptionPane.showMessageDialog(null, "Semua field wajib diisi");
+        kosong();
         return;
         }
 
         if(!password.equals(repassword)){
         JOptionPane.showMessageDialog(null, "Password tidak sama");
+        kosong();
         return;
         }
         
         try{
+            String cekSql = "SELECT COUNT(*) FROM user WHERE username = ?";
+            PreparedStatement cekStat = conn.prepareStatement(cekSql);
+            cekStat.setString(1, username);
+            ResultSet rs = cekStat.executeQuery();
+            if(rs.next() && rs.getInt(1) > 0){
+                JOptionPane.showMessageDialog(null, "Username sudah digunakan");
+                kosong();
+                return;
+            }
+            
             String sql = "INSERT INTO user(username, password) VALUES (?, ?)";
             PreparedStatement stat = conn.prepareStatement(sql);
             stat.setString(1, username);
@@ -406,6 +421,8 @@ public class login extends javax.swing.JFrame {
         panelmain.add(panellogin);
         panelmain.repaint();
         panelmain.revalidate();
+        
+        kosong();
     }//GEN-LAST:event_jLabel12MouseClicked
 
     private void passwordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_passwordActionPerformed

@@ -47,6 +47,8 @@ public class MainMenu extends javax.swing.JFrame {
         datatable1();
         datatable2();
         datatable3();
+        datatable4();
+        datatable5();
         datatable6();
         this.bobot = new double[]{0.30, 0.15, 0.10, 0.15, 0.30};
         decimalFormat.setMaximumFractionDigits(2);
@@ -67,6 +69,8 @@ public class MainMenu extends javax.swing.JFrame {
     private int buttonSawClicked = 0;
     
     protected void insertSAW(){
+        modelSAWFinal.clear();
+        
         ModelAlternatifSAW[] modelArray = new ModelAlternatifSAW[model.size()];
         model.toArray(modelArray);
         
@@ -84,8 +88,10 @@ public class MainMenu extends javax.swing.JFrame {
         for (int i = 0; i < matrix.length; i++) {
             ModelAlternatifSAW models = new ModelAlternatifSAW();
             Double sums = 0.00;
-            models.setId(modelForSAW.get(i).getId());
-            models.setNamahp(modelForSAW.get(i).getNamahp());
+//            models.setId(modelForSAW.get(i).getId());
+//            models.setNamahp(modelForSAW.get(i).getNamahp());
+            models.setId(i + 1);
+            models.setNamahp(tabelnormalisasi.getValueAt(i, 1).toString());
             
             for (int j = 0; j < matrix[i].length; j++) {
                 sums += matrix[i][j];
@@ -265,6 +271,8 @@ public class MainMenu extends javax.swing.JFrame {
     tabmode = new DefaultTableModel(null, Baris);
     tabelnormalisasi.setModel(tabmode);
     model.clear();
+    modelForSAW.clear();
+    modelSAWFinal.clear();
     try {
     String sql = "Select * from tebelalternatif2";
         java.sql.Statement stat = conn.createStatement();
@@ -307,6 +315,8 @@ public class MainMenu extends javax.swing.JFrame {
             nos ++;
             
             ModelAlternatifSAW model1 = new ModelAlternatifSAW();
+            model1.setId(Integer.parseInt(a));
+            model1.setNamahp(b);
             model1.setC1(Double.parseDouble(decimalFormat.format(c)));
             model1.setC2(Double.parseDouble(decimalFormat.format(d)));
             model1.setC3(Double.parseDouble(decimalFormat.format(e)));
@@ -1267,6 +1277,8 @@ public class MainMenu extends javax.swing.JFrame {
         panelmain.add(panelhp);
         panelmain.repaint();
         panelmain.revalidate();
+        Chipset();
+        RAM();
     }//GEN-LAST:event_bdatahpActionPerformed
 
     private void bhasilActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bhasilActionPerformed
@@ -1275,6 +1287,7 @@ public class MainMenu extends javax.swing.JFrame {
         panelmain.repaint();
         panelmain.revalidate();
         
+        datatable3();
         datatable4();
         datatable5();
         
@@ -1586,6 +1599,12 @@ public class MainMenu extends javax.swing.JFrame {
     }//GEN-LAST:event_btnSimpanMouseExited
 
     private void btnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSimpanActionPerformed
+        String harga = c5.getText();
+        if(harga.isEmpty()){
+        JOptionPane.showMessageDialog(null, "Semua field wajib diisi");
+        return;
+        }
+        
         try{
             String sql1 = "insert into tabelalternatif1 values (?,?,?,?,?,?,?)";
             PreparedStatement stat = conn.prepareStatement(sql1);
@@ -1734,14 +1753,16 @@ public class MainMenu extends javax.swing.JFrame {
     }//GEN-LAST:event_btnProsesMouseExited
 
     private void btnProsesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProsesActionPerformed
-        if(buttonSawClicked == 0) {
-            insertSAW();
-            datatable4();
-            buttonSawClicked++;
-        } else {
-            System.err.println("Tidak bisa menghitung lebih dari 1 kali");
-            JOptionPane.showMessageDialog(null, "Tidak bisa menghitung kebih dari 1 kali");
-        }
+//        if(buttonSawClicked == 0) {
+//            insertSAW();
+//            datatable4();
+//            buttonSawClicked++;
+//        } else {
+//            System.err.println("Tidak bisa menghitung lebih dari 1 kali");
+//            JOptionPane.showMessageDialog(null, "Tidak bisa menghitung kebih dari 1 kali");
+//        }
+        insertSAW();
+        datatable4();
     }//GEN-LAST:event_btnProsesActionPerformed
 
     private void tabelhasilMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabelhasilMouseClicked
